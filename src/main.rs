@@ -1,14 +1,15 @@
-use crate::utils::{Point3, Ray};
-use cgmath::vec3;
+use crate::ray::{Point3d, Ray};
+use cgmath::{point3, vec3};
 use std::fs;
 
 mod utils;
+mod ray;
 
 const IMAGE_WIDTH: i32 = 400;
 const ASPECT_RATIO: f64 = 16.0 / 9.0;
 const IMAGE_HEIGHT: i32 = (IMAGE_WIDTH as f64 / ASPECT_RATIO) as i32;
 
-const ORIGIN: Point3 = vec3(0.0, 0.0, 0.0);
+const ORIGIN: Point3d = point3(0.0, 0.0, 0.0);
 
 fn main() {
     let viewport_height = 2.0;
