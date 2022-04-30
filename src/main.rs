@@ -1,11 +1,10 @@
+use cgmath::vec3;
 use std::fs;
+
+mod utils;
 
 const IMAGE_WIDTH: i32 = 256;
 const IMAGE_HEIGHT: i32 = 256;
-
-pub fn to_byte_rgb(color: f64) -> u8 {
-    (255.999 * color) as u8
-}
 
 fn main() {
     let mut output = String::new();
@@ -17,8 +16,7 @@ fn main() {
             let g = j as f64 / (IMAGE_HEIGHT - 1) as f64;
             let b = 0.25;
 
-            output +=
-                format!("{} {} {}\n", to_byte_rgb(r), to_byte_rgb(g), to_byte_rgb(b)).as_str();
+            output += utils::color_str(vec3(r, g, b)).as_str();
         }
 
         j -= 1;
