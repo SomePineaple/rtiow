@@ -3,6 +3,21 @@ use cgmath::{Point3, Vector3, vec3, point3, InnerSpace, dot};
 pub type Color = Vector3<f64>;
 pub type Point3d = Point3<f64>;
 
+trait Length {
+    fn length_squared(&self) -> f64;
+    fn length(&self) -> f64;
+}
+
+impl Length for Vector3<f64> {
+    fn length_squared(&self) -> f64 {
+        self.x*self.x + self.y*self.y + self.z*self.z
+    }
+
+    fn length(&self) -> f64 {
+        self.length_squared().sqrt()
+    }
+}
+
 pub struct Ray {
     origin: Point3d,
     dir: Vector3<f64>,
@@ -29,13 +44,13 @@ impl Ray {
 
     fn hit_sphere(&self, center: Point3d, radius: f64) -> f64 {
         let oc = self.origin - center;
-        let a = dot(self.dir, self.dir);
-        let b = 2.0 * dot(oc, self.dir);
-        let c = dot(oc, oc) - radius*radius;
-        let discriminant = b*b - 4.0*a*c;
+        let a = self.dir.length_squared();
+        let half_b = dot(oc, self.dir);
+        let c = oc.length_squared() - radius*radius;
+        let discriminant = half_b*half_b - a*c;
         if discriminant < 0.0 {
             return -1.0;
         }
-        (-b - discriminant.sqrt()) / (2.0 * a)
+        (-half_b - discriminant.sqrt()) / a
     }
 }
