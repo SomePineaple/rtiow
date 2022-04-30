@@ -24,6 +24,7 @@ fn main() {
     output += format!("P3\n{} {}\n256\n", IMAGE_WIDTH, IMAGE_HEIGHT).as_str();
     let mut j = IMAGE_HEIGHT - 1;
     while j >= 0 {
+        println!("Lines left: {}", j);
         for i in 0..IMAGE_WIDTH {
             let u = i as f64 / (IMAGE_WIDTH - 1) as f64;
             let v = j as f64 / (IMAGE_HEIGHT - 1) as f64;
