@@ -5,6 +5,15 @@ pub fn to_byte_rgb(color: f64) -> u8 {
     (255.999 * color) as u8
 }
 
+pub fn vec3_reflect(v: Vector3<f64>, n: Vector3<f64>) -> Vector3<f64> {
+    v - 2.0*dot(v, n)*n
+}
+
+pub fn vec3_near_zero(vec: Vector3<f64>) -> bool {
+    const s: f64 = 1e-8;
+    (vec.x.abs() < s) && (vec.y.abs() < s) && (vec.z.abs() < s)
+}
+
 pub fn rand_vec3_in_unit_sphere() -> Vector3<f64> {
     loop {
         let p = (rand_vec3() * 2.0) - vec3(1.0, 1.0, 1.0);

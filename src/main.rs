@@ -4,6 +4,7 @@ use cgmath::{point3, vec3};
 use rand::Rng;
 use std::fs;
 use crate::hittable::hittable_list::HittableList;
+use crate::hittable::material::Lambertian;
 use crate::hittable::sphere::Sphere;
 
 mod utils;
@@ -15,12 +16,12 @@ const IMAGE_WIDTH: i32 = 1280;
 const ASPECT_RATIO: f64 = 16.0 / 9.0;
 const IMAGE_HEIGHT: i32 = (IMAGE_WIDTH as f64 / ASPECT_RATIO) as i32;
 const SAMPLES_PER_PIXEL: i32 = 250;
-const MAX_DEPTH: i32 = 10;
+const MAX_DEPTH: i32 = 25;
 
 fn main() {
     let mut world = HittableList::new();
-    world.add(Box::new(Sphere::new(point3(0.0, 0.0, -1.0), 0.5)));
-    world.add(Box::new(Sphere::new(point3(0.0, -100.5, -1.0), 100.0)));
+    world.add(Box::new(Sphere::new(point3(0.0, 0.0, -1.0), 0.5, Box::new(Lambertian::new(vec3(1.0, 1.0, 1.0))))));
+    world.add(Box::new(Sphere::new(point3(0.0, -100.5, -1.0), 100.0, Box::new(Lambertian::new(vec3(0.3, 0.5, 0.8))))));
 
     let camera = Camera::new();
 
@@ -31,7 +32,7 @@ fn main() {
 
     let mut j = IMAGE_HEIGHT - 1;
     while j >= 0 {
-        println!("Lines left: {}, output size {}", j, output.len());
+        println!("Lines left: {}", j);
         for i in 0..IMAGE_WIDTH {
             let mut pixel_color = vec3(0.0, 0.0, 0.0);
 
@@ -41,7 +42,7 @@ fn main() {
                 rand = rng.gen();
                 let v = (j as f64 + rand) / (IMAGE_HEIGHT-1) as f64;
                 let r = camera.get_ray(u, v);
-                pixel_color += r.color(&world, MAX_DEPTH, ray::DiffuseMode::LAMBERDIAN);
+                pixel_color += r.color(&world, MAX_DEPTH);
             }
 
             output += utils::color_str(pixel_color, SAMPLES_PER_PIXEL).as_str();

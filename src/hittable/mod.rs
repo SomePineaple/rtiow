@@ -1,22 +1,26 @@
 pub mod sphere;
 pub mod hittable_list;
+pub mod material;
 
 use cgmath::{dot, Point3, point3, vec3, Vector3};
+use crate::hittable::material::Material;
 use crate::Ray;
 
 pub struct HitRecord {
     pub p: Point3<f64>,
     pub normal: Vector3<f64>,
     pub t: f64,
+    pub mat: Box<dyn Material>,
     front_face: bool,
 }
 
 impl HitRecord {
-    pub fn new() -> Self {
+    pub fn new(mat: &Box<dyn Material>) -> Self {
         Self {
             p: point3(0.0, 0.0, 0.0),
             normal: vec3(0.0, 0.0, 0.0),
             t: 0.0,
+            mat: mat.box_clone(),
             front_face: false
         }
     }

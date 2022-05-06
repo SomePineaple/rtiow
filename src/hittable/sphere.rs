@@ -1,6 +1,7 @@
 use cgmath::{dot, Point3, Vector3};
 use crate::hittable::{HitRecord, Hittable};
 use crate::hittable::hittable_list::HittableList;
+use crate::hittable::material::Material;
 use crate::Ray;
 
 trait Length {
@@ -19,13 +20,14 @@ impl Length for Vector3<f64> {
 }
 
 pub struct Sphere {
+    pub mat: Box<dyn Material>,
     center: Point3<f64>,
     radius: f64,
 }
 
 impl Sphere {
-    pub fn new(center: Point3<f64>, radius: f64) -> Self {
-        Self { center, radius }
+    pub fn new(center: Point3<f64>, radius: f64, mat: Box<dyn Material>) -> Self {
+        Self { mat, center, radius }
     }
 }
 
@@ -51,7 +53,7 @@ impl Hittable for Sphere {
             }
         }
 
-        let mut rec = HitRecord::new();
+        let mut rec = HitRecord::new(&self.mat);
         rec.t = root;
         rec.p = r.at(rec.t);
         let outward_normal = (rec.p - self.center) / self.radius;
