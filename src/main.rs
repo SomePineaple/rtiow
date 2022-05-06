@@ -21,8 +21,8 @@ const MAX_DEPTH: i32 = 25;
 fn main() {
     let mut world = HittableList::new();
     world.add(Box::new(Sphere::new(point3(0.0, 0.0, -1.0), 0.5, Box::new(Lambertian::new(vec3(0.9, 0.2, 0.2))))));
-    world.add(Box::new(Sphere::new(point3(-1.0, 0.0, -1.0), 0.5, Box::new(Metal::new(vec3(0.8, 0.8, 0.8))))));
-    world.add(Box::new(Sphere::new(point3(1.0, 0.0, -1.0), 0.5, Box::new(Metal::new(vec3(0.3, 0.5, 0.8))))));
+    world.add(Box::new(Sphere::new(point3(-1.0, 0.0, -1.0), 0.5, Box::new(Metal::new(vec3(0.8, 0.8, 0.8), 0.0)))));
+    world.add(Box::new(Sphere::new(point3(1.0, 0.0, -1.0), 0.5, Box::new(Metal::new(vec3(0.3, 0.5, 0.8), 0.5)))));
     world.add(Box::new(Sphere::new(point3(0.0, -100.5, -1.0), 100.0, Box::new(Lambertian::new(vec3(1.0, 1.0, 1.0))))));
 
     let camera = Camera::new();

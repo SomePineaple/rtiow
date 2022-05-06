@@ -3,7 +3,7 @@ use cgmath::{InnerSpace, dot};
 use super::HitRecord;
 use crate::Ray;
 use crate::ray::Color;
-use crate::utils::{rand_normalized_vec3, vec3_near_zero, vec3_reflect};
+use crate::utils::{rand_normalized_vec3, rand_vec3_in_unit_sphere, vec3_near_zero, vec3_reflect};
 
 pub trait Material {
     fn scatter(&self, ray: &Ray, rec: &HitRecord) -> (Color, Ray, bool);
@@ -38,12 +38,14 @@ impl Material for Lambertian {
 
 pub struct Metal {
     pub color: Color,
+    pub fuzz: f64,
 }
 
 impl Metal {
-    pub fn new(color: Color) -> Self {
+    pub fn new(color: Color, fuzz: f64) -> Self {
         Self {
             color,
+            fuzz: fuzz.min(1.0),
         }
     }
 }
@@ -51,11 +53,11 @@ impl Metal {
 impl Material for Metal {
     fn scatter(&self, ray: &Ray, rec: &HitRecord) -> (Color, Ray, bool) {
         let reflected = vec3_reflect(ray.dir.normalize(), rec.normal);
-        let scattered = Ray::new(rec.p, reflected);
+        let scattered = Ray::new(rec.p, reflected + self.fuzz*rand_vec3_in_unit_sphere());
         (self.color, scattered, dot(scattered.dir, rec.normal) > 0.0)
     }
 
     fn box_clone(&self) -> Box<dyn Material> {
-        Box::new(Metal::new(self.color.clone()))
+        Box::new(Metal::new(self.color.clone(), self.fuzz))
     }
 }
