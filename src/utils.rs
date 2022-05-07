@@ -9,9 +9,20 @@ pub fn vec3_reflect(v: Vector3<f64>, n: Vector3<f64>) -> Vector3<f64> {
     v - 2.0*dot(v, n)*n
 }
 
+pub fn vec3_refract(uv: Vector3<f64>, n: Vector3<f64>, etai_over_etat: f64) -> Vector3<f64> {
+    let cos_theta = dot(-uv, n).min(1.0);
+    let r_out_perp = etai_over_etat * (uv + cos_theta*n);
+    let r_out_parallel = -((1.0 - vec3_length_squared(r_out_perp)).abs().sqrt()) * n;
+    r_out_perp + r_out_parallel
+}
+
+pub fn vec3_length_squared(vec: Vector3<f64>) -> f64 {
+    vec.x*vec.x + vec.y*vec.y + vec.z*vec.z
+}
+
 pub fn vec3_near_zero(vec: Vector3<f64>) -> bool {
-    const s: f64 = 1e-8;
-    (vec.x.abs() < s) && (vec.y.abs() < s) && (vec.z.abs() < s)
+    const S: f64 = 1e-8;
+    (vec.x.abs() < S) && (vec.y.abs() < S) && (vec.z.abs() < S)
 }
 
 pub fn rand_vec3_in_unit_sphere() -> Vector3<f64> {

@@ -1,9 +1,9 @@
-use cgmath::{InnerSpace, dot};
+use cgmath::{InnerSpace, dot, vec3};
 
 use super::HitRecord;
 use crate::Ray;
 use crate::ray::Color;
-use crate::utils::{rand_normalized_vec3, rand_vec3_in_unit_sphere, vec3_near_zero, vec3_reflect};
+use crate::utils::{rand_normalized_vec3, rand_vec3_in_unit_sphere, vec3_near_zero, vec3_reflect, vec3_refract};
 
 pub trait Material {
     fn scatter(&self, ray: &Ray, rec: &HitRecord) -> (Color, Ray, bool);
@@ -59,5 +59,35 @@ impl Material for Metal {
 
     fn box_clone(&self) -> Box<dyn Material> {
         Box::new(Metal::new(self.color.clone(), self.fuzz))
+    }
+}
+
+pub struct Dielectric {
+    pub ir: f64,
+}
+
+impl Dielectric {
+    pub fn new(ir: f64) -> Self {
+        Self {
+            ir,
+        }
+    }
+}
+
+impl Material for Dielectric {
+    fn scatter(&self, ray: &Ray, rec: &HitRecord) -> (Color, Ray, bool) {
+        let refraction_ratio: f64;
+        if rec.front_face {
+            refraction_ratio = (1.0/self.ir);
+        } else {
+            refraction_ratio = self.ir;
+        }
+        let normalized_dir = ray.dir.normalize();
+        let refracted = vec3_refract(normalized_dir, rec.normal, refraction_ratio);
+        (vec3(1.0, 1.0, 1.0), Ray::new(rec.p, refracted), true)
+    }
+
+    fn box_clone(&self) -> Box<dyn Material> {
+        Box::new(Dielectric::new(self.ir))
     }
 }
