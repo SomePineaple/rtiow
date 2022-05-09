@@ -12,11 +12,13 @@ mod ray;
 mod hittable;
 mod camera;
 
-const IMAGE_WIDTH: i32 = 1280;
+const IMAGE_WIDTH: i32 = 400;
 const ASPECT_RATIO: f64 = 16.0 / 9.0;
+const FOV: f64 = 90.0;
 const IMAGE_HEIGHT: i32 = (IMAGE_WIDTH as f64 / ASPECT_RATIO) as i32;
 const SAMPLES_PER_PIXEL: i32 = 128;
 const MAX_DEPTH: i32 = 25;
+
 
 fn main() {
     let mut world = HittableList::new();
@@ -25,7 +27,7 @@ fn main() {
     world.add(Box::new(Sphere::new(point3(1.0, 0.0, -1.0), 0.5, Box::new(Metal::new(vec3(0.3, 0.5, 0.8), 0.1)))));
     world.add(Box::new(Sphere::new(point3(0.0, -100.5, -1.0), 100.0, Box::new(Lambertian::new(vec3(1.0, 1.0, 1.0))))));
 
-    let camera = Camera::new();
+    let camera = Camera::new(FOV, ASPECT_RATIO);
 
     let mut output = String::new();
     output += format!("P3\n{} {}\n256\n", IMAGE_WIDTH, IMAGE_HEIGHT).as_str();
