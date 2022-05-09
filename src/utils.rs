@@ -35,6 +35,21 @@ pub fn rand_vec3_in_unit_sphere() -> Vector3<f64> {
     }
 }
 
+pub fn rand_vec3_in_unit_disk() -> Vector3<f64> {
+    loop {
+        let p = vec3(rand_double(), rand_double(), 0.0);
+        if vec3_length_squared(p) >= 1.0 {
+            continue;
+        }
+        return p;
+    }
+}
+
+pub fn rand_double() -> f64 {
+    let r: f64 = rand::thread_rng().gen();
+    r*2.0 - 1.0
+}
+
 pub fn rand_vec3_in_hemisphere(normal: Vector3<f64>) -> Vector3<f64> {
     let in_unit_sphere = rand_vec3_in_unit_sphere();
     if dot(in_unit_sphere, normal) > 0.0 {
