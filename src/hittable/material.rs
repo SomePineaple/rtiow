@@ -1,9 +1,11 @@
-use cgmath::{InnerSpace, dot, vec3};
+use cgmath::{dot, vec3, InnerSpace};
 
 use super::HitRecord;
-use crate::Ray;
 use crate::ray::Color;
-use crate::utils::{rand_normalized_vec3, rand_vec3_in_unit_sphere, vec3_near_zero, vec3_reflect, vec3_refract};
+use crate::utils::{
+    rand_normalized_vec3, rand_vec3_in_unit_sphere, vec3_near_zero, vec3_reflect, vec3_refract,
+};
+use crate::Ray;
 
 pub trait Material {
     fn scatter(&self, ray: &Ray, rec: &HitRecord) -> (Color, Ray, bool);
@@ -16,9 +18,7 @@ pub struct Lambertian {
 
 impl Lambertian {
     pub fn new(color: Color) -> Self {
-        Self {
-            color,
-        }
+        Self { color }
     }
 }
 
@@ -53,7 +53,7 @@ impl Metal {
 impl Material for Metal {
     fn scatter(&self, ray: &Ray, rec: &HitRecord) -> (Color, Ray, bool) {
         let reflected = vec3_reflect(ray.dir.normalize(), rec.normal);
-        let scattered = Ray::new(rec.p, reflected + self.fuzz*rand_vec3_in_unit_sphere());
+        let scattered = Ray::new(rec.p, reflected + self.fuzz * rand_vec3_in_unit_sphere());
         (self.color, scattered, dot(scattered.dir, rec.normal) > 0.0)
     }
 
@@ -68,9 +68,7 @@ pub struct Dielectric {
 
 impl Dielectric {
     pub fn new(ir: f64) -> Self {
-        Self {
-            ir,
-        }
+        Self { ir }
     }
 }
 
@@ -78,7 +76,7 @@ impl Material for Dielectric {
     fn scatter(&self, ray: &Ray, rec: &HitRecord) -> (Color, Ray, bool) {
         let refraction_ratio: f64;
         if rec.front_face {
-            refraction_ratio = (1.0/self.ir);
+            refraction_ratio = 1.0 / self.ir;
         } else {
             refraction_ratio = self.ir;
         }

@@ -24,7 +24,6 @@ impl Ray {
             return vec3(0.0, 0.0, 0.0);
         }
         if let Some(hit) = world.hit(*self, 0.001, f64::MAX) {
-            let target: Point3<f64>;
             let (attenuation, scattered, keep_going) = hit.mat.scatter(self, &hit);
             if keep_going {
                 let other_color = scattered.color(world, depth-1);

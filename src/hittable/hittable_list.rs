@@ -19,17 +19,25 @@ impl HittableList {
     pub fn add(&mut self, object: Box<dyn Hittable>) {
         self.objects.push(object);
     }
+
+    pub fn clone(&self) -> Self {
+        let mut cloned = Self::new();
+
+        for object in self.objects.as_slice() {
+            cloned.add(object.box_clone());
+        }
+
+        cloned
+    }
 }
 
 impl Hittable for HittableList {
     fn hit(&self, r: Ray, min: f64, max: f64) -> Option<HitRecord> {
         let mut temp_rec: Option<HitRecord> = None;
-        let mut hit_anything = false;
         let mut closest = max;
 
         for obj in &self.objects {
             if let Some(rec) = obj.hit(r, min, max) {
-                hit_anything = true;
                 if rec.t < closest {
                     closest = rec.t;
                     temp_rec = Some(rec);
@@ -38,5 +46,15 @@ impl Hittable for HittableList {
         }
 
         return temp_rec;
+    }
+
+    fn box_clone(&self) -> Box<dyn Hittable> {
+        let mut cloned = Self::new();
+
+        for object in self.objects.as_slice() {
+            cloned.add(object.box_clone());
+        }
+
+        Box::new(cloned)
     }
 }

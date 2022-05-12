@@ -1,6 +1,5 @@
 use cgmath::{dot, Point3, Vector3};
 use crate::hittable::{HitRecord, Hittable};
-use crate::hittable::hittable_list::HittableList;
 use crate::hittable::material::Material;
 use crate::Ray;
 
@@ -60,5 +59,9 @@ impl Hittable for Sphere {
         rec.set_face_normal(r, outward_normal);
 
         return Some(rec);
+    }
+
+    fn box_clone(&self) -> Box<dyn Hittable> {
+        Box::new(Sphere::new(self.center.clone(), self.radius, self.mat.box_clone()))
     }
 }
