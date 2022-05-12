@@ -58,6 +58,7 @@ fn random_scene() -> HittableList {
 
     for a in -11..11 {
         for b in -11..11 {
+            let albedo = vec3(rng.gen::<f64>(), rng.gen::<f64>(), rng.gen::<f64>());
             let choose_mat: f64 = rng.gen::<f64>();
             let center = point3(
                 a as f64 + 0.9 * rng.gen::<f64>(),
@@ -66,19 +67,18 @@ fn random_scene() -> HittableList {
             );
             if vec3_length_squared(center - point3(4.0, 0.2, 0.0)).sqrt() > 0.9 {
                 if choose_mat < 0.8 {
-                    let albedo = rand_vec3();
                     world.add(Box::new(Sphere::new(
                         center,
                         0.2,
                         Box::new(Lambertian::new(albedo)),
                     )));
                 } else if choose_mat < 0.95 {
-                    let albedo = rand_vec3() / 2.0 + vec3(0.5, 0.5, 0.5);
+                    let color = albedo / 2.0 + vec3(0.5, 0.5, 0.5);
                     let fuzz = rng.gen::<f64>() / 2.0;
                     world.add(Box::new(Sphere::new(
                         center,
                         0.2,
-                        Box::new(Metal::new(albedo, fuzz)),
+                        Box::new(Metal::new(color, fuzz)),
                     )));
                 } else {
                     world.add(Box::new(Sphere::new(
@@ -135,6 +135,8 @@ fn main() {
 
     let mut j = IMAGE_HEIGHT - 1;
     while j >= 0 {
+        println!("Spawning line {}", j);
+
         let line_num = j;
         let spx = SAMPLES_PER_PIXEL;
 
@@ -162,18 +164,26 @@ fn main() {
         j -= 1;
     }
 
+    let mut num_joined = 0;
     for th in threads {
         th.join().expect("thread panicked");
+        println!("joined {}", num_joined);
+        num_joined += 1;
     }
 
     let mut lines: Vec<Scanline> = Vec::new();
     j = IMAGE_HEIGHT - 1;
     while j >= 0 {
+        println!("recieved line {}", j);
         lines.push(recv.recv().expect("failed to recieve"));
         j -= 1;
     }
 
     lines.sort_by(|a, b| b.line_num.cmp(&a.line_num));
+
+    for line in lines {
+        output += &line.to_string();
+    }
 
     fs::write("./test.ppm", output).expect("Failed to write file");
 }
