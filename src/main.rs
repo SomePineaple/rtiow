@@ -12,18 +12,21 @@ use std::sync::mpsc;
 use std::sync::mpsc::{Receiver, Sender};
 use std::thread;
 use utils::vec3_length_squared;
+use std::collections::HashMap;
 
 mod camera;
 mod hittable;
 mod ray;
 mod utils;
 
-const IMAGE_WIDTH: i32 = 1280;
+const IMAGE_WIDTH: i32 = 400;
 const ASPECT_RATIO: f64 = 16.0 / 9.0;
 const FOV: f64 = 25.0;
 const IMAGE_HEIGHT: i32 = (IMAGE_WIDTH as f64 / ASPECT_RATIO) as i32;
-const SAMPLES_PER_PIXEL: i32 = 128;
-const MAX_DEPTH: i32 = 25;
+const SAMPLES_PER_PIXEL: i32 = 512;
+const MAX_DEPTH: i32 = 50;
+
+const MAX_THREADS: i32 = 10;
 
 struct Scanline {
     pub pixels: Vec<Vector3<f64>>,
@@ -131,52 +134,56 @@ fn main() {
 
     let (send, recv): (Sender<Scanline>, Receiver<Scanline>) = mpsc::channel();
 
-    let mut threads: Vec<thread::JoinHandle<_>> = Vec::new();
+    let mut threads: HashMap<i32, thread::JoinHandle<_>> = HashMap::new();
 
-    let mut j = IMAGE_HEIGHT - 1;
-    while j >= 0 {
-        println!("Spawning line {}", j);
-
-        let line_num = j;
-        let spx = SAMPLES_PER_PIXEL;
-
-        let local_camera = camera.clone();
-        let local_send = send.clone();
-        threads.push(thread::spawn(move || {
-            let world = random_scene();
-            let mut pixels: Vec<Vector3<f64>> = Vec::new();
-            let mut rng = rand::thread_rng();
-            for i in 0..IMAGE_WIDTH {
-                let mut pixel_color = vec3(0.0, 0.0, 0.0);
-                for _sample in 0..spx {
-                    let mut rand: f64 = rng.gen();
-                    let u = (i as f64 + rand) / (IMAGE_WIDTH - 1) as f64;
-                    rand = rng.gen();
-                    let v = (line_num as f64 + rand) / (IMAGE_HEIGHT - 1) as f64;
-                    let r = local_camera.get_ray(u, v);
-                    pixel_color += r.color(&world, MAX_DEPTH);
-                }
-                pixels.push(pixel_color);
-            }
-            local_send.send(Scanline::new(pixels, line_num)).unwrap();
-        }));
-
-        j -= 1;
-    }
-
-    let mut num_joined = 0;
-    for th in threads {
-        th.join().expect("thread panicked");
-        println!("joined {}", num_joined);
-        num_joined += 1;
-    }
+    let mut num_threads = 0;
 
     let mut lines: Vec<Scanline> = Vec::new();
-    j = IMAGE_HEIGHT - 1;
-    while j >= 0 {
-        println!("recieved line {}", j);
-        lines.push(recv.recv().expect("failed to recieve"));
-        j -= 1;
+
+    let mut j = IMAGE_HEIGHT - 1;
+    loop {
+        if num_threads < MAX_THREADS && j >= 0 {
+            let line_num = j;
+            let spx = SAMPLES_PER_PIXEL;
+
+            let local_camera = camera.clone();
+            let local_send = send.clone();
+            println!("spawning {}", j);
+            threads.insert(j, thread::spawn(move || {
+                let world = random_scene();
+                let mut pixels: Vec<Vector3<f64>> = Vec::new();
+                let mut rng = rand::thread_rng();
+                for i in 0..IMAGE_WIDTH {
+                    let mut pixel_color = vec3(0.0, 0.0, 0.0);
+                    for _sample in 0..spx {
+                        let mut rand: f64 = rng.gen();
+                        let u = (i as f64 + rand) / (IMAGE_WIDTH - 1) as f64;
+                        rand = rng.gen();
+                        let v = (line_num as f64 + rand) / (IMAGE_HEIGHT - 1) as f64;
+                        let r = local_camera.get_ray(u, v);
+                        pixel_color += r.color(&world, MAX_DEPTH);
+                    }
+                    pixels.push(pixel_color);
+                }
+                local_send.send(Scanline::new(pixels, line_num)).unwrap();
+            }));
+
+            j -= 1;
+            num_threads += 1;
+        }
+
+        let recvd = recv.try_recv();
+        if recvd.is_ok() {
+            let scanline = recvd.unwrap();
+            println!("finished {}", scanline.line_num);
+            threads.remove(&scanline.line_num).unwrap().join().expect("failed to join thread");
+            num_threads -= 1;
+            lines.push(scanline);
+        }
+
+        if j < 0 && num_threads == 0 {
+            break;
+        }
     }
 
     lines.sort_by(|a, b| b.line_num.cmp(&a.line_num));
