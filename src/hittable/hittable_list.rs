@@ -19,16 +19,6 @@ impl HittableList {
     pub fn add(&mut self, object: Box<dyn Hittable>) {
         self.objects.push(object);
     }
-
-    pub fn clone(&self) -> Self {
-        let mut cloned = Self::new();
-
-        for object in self.objects.as_slice() {
-            cloned.add(object.box_clone());
-        }
-
-        cloned
-    }
 }
 
 impl Hittable for HittableList {

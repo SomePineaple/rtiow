@@ -23,7 +23,7 @@ impl Lambertian {
 }
 
 impl Material for Lambertian {
-    fn scatter(&self, ray: &Ray, rec: &HitRecord) -> (Color, Ray, bool) {
+    fn scatter(&self, _ray: &Ray, rec: &HitRecord) -> (Color, Ray, bool) {
         let mut scatter_direction = rec.normal + rand_normalized_vec3();
         if vec3_near_zero(scatter_direction) {
             scatter_direction = rec.normal;

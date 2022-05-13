@@ -11,7 +11,7 @@ use std::fs;
 use std::sync::mpsc;
 use std::sync::mpsc::{Receiver, Sender};
 use std::thread;
-use utils::{rand_vec3, vec3_length_squared};
+use utils::vec3_length_squared;
 
 mod camera;
 mod hittable;
@@ -20,7 +20,7 @@ mod utils;
 
 const IMAGE_WIDTH: i32 = 1280;
 const ASPECT_RATIO: f64 = 16.0 / 9.0;
-const FOV: f64 = 50.0;
+const FOV: f64 = 25.0;
 const IMAGE_HEIGHT: i32 = (IMAGE_WIDTH as f64 / ASPECT_RATIO) as i32;
 const SAMPLES_PER_PIXEL: i32 = 128;
 const MAX_DEPTH: i32 = 25;

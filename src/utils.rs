@@ -50,15 +50,6 @@ pub fn rand_double() -> f64 {
     r*2.0 - 1.0
 }
 
-pub fn rand_vec3_in_hemisphere(normal: Vector3<f64>) -> Vector3<f64> {
-    let in_unit_sphere = rand_vec3_in_unit_sphere();
-    if dot(in_unit_sphere, normal) > 0.0 {
-        return in_unit_sphere;
-    } else {
-        return -in_unit_sphere;
-    }
-}
-
 pub fn rand_normalized_vec3() -> Vector3<f64> {
     return rand_vec3_in_unit_sphere().normalize();
 }
